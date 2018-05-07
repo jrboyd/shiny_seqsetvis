@@ -124,7 +124,7 @@ body <- dashboardBody(
                 fileInput(inputId = "UploadLoadSet", label = "Browse Local Files"),
                 tags$hr()
         ),
-        tabItem(tabName = "intersect",
+        tabItem(tabName = "intersect", 
                 h2("Intersect"),
                 actionButton("redrawPlot", label = "Redraw"),
                 tags$br(),
@@ -226,9 +226,11 @@ shinyApp(
         output$menu <- renderMenu({
             sidebarMenu(
                 menuItem("Load", tabName = "load", icon = icon("file-o", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red"),
-                menuItem("Intersect", tabName = "intersect", icon = icon("bar-chart", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red"),
+                menuItem("Intersect", tabName = "intersect", icon = icon("bar-chart", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red", selected = TRUE),
                 menuItem("Inspect", tabName = "inspect", icon = icon("area-chart", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red")
             )
         })
+        
+        # updateTabItems(session, "tabs", "intersect")
     }
 )
