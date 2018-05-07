@@ -6,13 +6,14 @@
 #
 #    http://shiny.rstudio.com/
 #
-
-library(shiny)
-library(shinyjs)
-library(shinydashboard)
-library(magrittr)
-library(shinyFiles)
-library(shinycssloaders)
+suppressPackageStartupMessages({
+    library(shiny)
+    library(shinyjs)
+    library(shinydashboard)
+    library(magrittr)
+    library(shinyFiles)
+    library(shinycssloaders)
+})
 
 
 appCSS <- "
@@ -165,8 +166,10 @@ shinyApp(
                     body
                 )))),
     server = function(input, output, session) {
-        library(seqsetvis)
-        library(cowplot)
+        suppressPackageStartupMessages({
+            library(seqsetvis)
+            library(cowplot)
+        })
         # Stop app when browser tab closed
         session$onSessionEnded(stopApp)
         # Hide the loading message when the rest of the server function has executed
