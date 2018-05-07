@@ -13,8 +13,7 @@ library(shinydashboard)
 library(magrittr)
 library(shinyFiles)
 library(shinycssloaders)
-library(seqsetvis)
-library(cowplot)
+
 
 appCSS <- "
 #loading-content {
@@ -166,6 +165,8 @@ shinyApp(
                     body
                 )))),
     server = function(input, output, session) {
+        library(seqsetvis)
+        library(cowplot)
         # Stop app when browser tab closed
         session$onSessionEnded(stopApp)
         # Hide the loading message when the rest of the server function has executed
