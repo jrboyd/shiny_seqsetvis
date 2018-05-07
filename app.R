@@ -72,8 +72,8 @@ names(bed_path) = "intersectR"
 
 
 shiny_ssvPlotBox = function(box_title = "Main Plot", id = 1, plot_id = "plotTest", collapsed = TRUE){
-    id = as.character(1)
-    box(title = box_title, collapsible = TRUE, collapsed = collapsed,
+    id = as.character(id)
+    mybox = box(title = box_title, collapsible = TRUE, collapsed = collapsed, solidHeader = TRUE, status = "primary", 
         fluidRow(
             column(width = 5,
                    withSpinner(plotOutput(plot_id, width = "280px", height = "280px"))),
@@ -96,6 +96,11 @@ shiny_ssvPlotBox = function(box_title = "Main Plot", id = 1, plot_id = "plotTest
             )
         )
     )
+    mybox = as.character(mybox)
+    to_ins =  'data-widget="collapse"'
+    mybox = sub(to_ins, "", mybox)
+    mybox = sub('class="box-header"', paste('class="box-header"', to_ins), mybox)
+    HTML(mybox)
 }
 
 header = dashboardHeader(
@@ -229,7 +234,10 @@ shinyApp(
         
         output$menu <- renderMenu({
             sidebarMenu(
-                menuItem("Load", tabName = "load", icon = icon("file-o", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red"),
+                menuItem("Load", 
+                         tabName = "load", 
+                         icon = icon("file-o", lib = "font-awesome"), 
+                         badgeLabel = "!", badgeColor = "red"),
                 menuItem("Intersect", tabName = "intersect", icon = icon("bar-chart", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red", selected = TRUE),
                 menuItem("Inspect", tabName = "inspect", icon = icon("area-chart", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red")
             )
