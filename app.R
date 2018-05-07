@@ -80,8 +80,9 @@ shiny_ssvPlotBox = function(box_title = "Main Plot", id = 1, plot_id = "plotTest
             column(width = 6,
                    style = "overflow-y:scroll; max-height: 280px",
                    h1("Settings:"),
-                   sliderInput(paste0("sliderTest-", id) , "Slip'n slide", min = 0, max = 3, value = 1),
+                   
                    textInput(paste0("textTest-", id), "Textin", placeholder = "text here"),
+                   sliderInput(paste0("sliderTest-", id) , "Slip'n slide", min = 0, max = 3, value = 1),
                    radioButtons(paste0("radioTest-", id), "ABC", LETTERS[1:3]),
                    h1("asdfasd"),
                    h1("asdfasd"),
@@ -96,11 +97,12 @@ shiny_ssvPlotBox = function(box_title = "Main Plot", id = 1, plot_id = "plotTest
             )
         )
     )
-    mybox = as.character(mybox)
-    to_ins =  'data-widget="collapse"'
-    mybox = sub(to_ins, "", mybox)
-    mybox = sub('class="box-header"', paste('class="box-header"', to_ins), mybox)
-    HTML(mybox)
+    # mybox = as.character(mybox)
+    # to_ins =  'data-widget="collapse"'
+    # mybox = sub(to_ins, "", mybox)
+    # mybox = sub('class="box-header"', paste('class="box-header"', to_ins), mybox)
+    # HTML(mybox)
+    mybox
 }
 
 header = dashboardHeader(
