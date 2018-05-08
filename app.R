@@ -74,28 +74,28 @@ names(bed_path) = "intersectR"
 shiny_ssvPlotBox = function(box_title = "Main Plot", id = 1, plot_id = "plotTest", collapsed = TRUE){
     id = as.character(id)
     mybox = box(title = box_title, collapsible = TRUE, collapsed = collapsed, solidHeader = TRUE, status = "primary", 
-        fluidRow(
-            column(width = 6,
-                   withSpinner(plotOutput(plot_id, width = "280px", height = "280px"))),
-            column(width = 6,
-                   style = "overflow-y:scroll; max-height: 280px",
-                   h1("Settings:"),
-                   
-                   textInput(paste0("textTest-", id), "Textin", placeholder = "text here"),
-                   sliderInput(paste0("sliderTest-", id) , "Slip'n slide", min = 0, max = 3, value = 1),
-                   radioButtons(paste0("radioTest-", id), "ABC", LETTERS[1:3]),
-                   h1("asdfasd"),
-                   h1("asdfasd"),
-                   h1("asdfasd"),
-                   h1("asdfasd"),
-                   h1("asdfasd"),
-                   h1("asdfasd"),
-                   h1("asdfasd"),
-                   h1("asdfasd"),
-                   h1("asdfasd"),
-                   p("asdfasd")
-            )
-        )
+                fluidRow(
+                    column(width = 6,
+                           withSpinner(plotOutput(plot_id, width = "280px", height = "280px"))),
+                    column(width = 5, 
+                           style = "overflow-y:scroll; max-height: 280px",
+                           h1("Settings:"),
+                           
+                           textInput(paste0("textTest-", id), "Textin", placeholder = "text here"),
+                           sliderInput(paste0("sliderTest-", id) , "Slip'n slide", min = 0, max = 3, value = 1),
+                           radioButtons(paste0("radioTest-", id), "ABC", LETTERS[1:3]),
+                           h1("asdfasd"),
+                           h1("asdfasd"),
+                           h1("asdfasd"),
+                           h1("asdfasd"),
+                           h1("asdfasd"),
+                           h1("asdfasd"),
+                           h1("asdfasd"),
+                           h1("asdfasd"),
+                           h1("asdfasd"),
+                           p("asdfasd")
+                    )
+                )
     )
     # mybox = as.character(mybox)
     # to_ins =  'data-widget="collapse"'
@@ -163,6 +163,7 @@ shinyApp(
         inlineCSS(appCSS),
         div(
             id = "loading-content",
+            # h2("Loading...", class="centerPseudo")
             h2("Loading...")
         ),
         hidden(
@@ -173,18 +174,35 @@ shinyApp(
                     sidebar,
                     body
                 ))),
-        tags$script(src="tony.js", charset="utf-8")
-        ),
+        tags$script(src="tony.js", charset="utf-8")#,
+        # tags$script(src="www/centering.css")
+    ),
     server = function(input, output, session) {
-        suppressPackageStartupMessages({
-            library(seqsetvis)
-            library(cowplot)
-        })
         # Stop app when browser tab closed
         session$onSessionEnded(stopApp)
+        
+        tmp.sink = suppressPackageStartupMessages({
+            libs_tl = c(
+                "data.table",
+                "rtracklayer",
+                "GenomicRanges",
+                "ggplot2",
+                "cowplot",
+                "seqsetvis"
+            )
+            withProgress(message = 'Loading libraries', value = 0, max = length(libs_tl), {
+                for(i in seq_along(libs_tl)){
+                    incProgress(1, message = libs_tl[i],
+                                detail = paste0("(", i, "/", length(libs_tl), ")"))
+                    library(libs_tl[i], character.only = TRUE)
+                }
+                
+                
+            })
+        })
         # Hide the loading message when the rest of the server function has executed
-        hide(id = "loading-content", anim = TRUE, animType = "fade")    
-        show("app-content")
+        shinyjs::hide(id = "loading-content", anim = TRUE, animType = "fade")    
+        shinyjs::show("app-content")
         
         # The currently selected tab from the first box
         shinyFileChoose(input, 'FilesLoadSet', 
