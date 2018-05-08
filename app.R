@@ -75,7 +75,7 @@ shiny_ssvPlotBox = function(box_title = "Main Plot", id = 1, plot_id = "plotTest
     id = as.character(id)
     mybox = box(title = box_title, collapsible = TRUE, collapsed = collapsed, solidHeader = TRUE, status = "primary", 
         fluidRow(
-            column(width = 5,
+            column(width = 6,
                    withSpinner(plotOutput(plot_id, width = "280px", height = "280px"))),
             column(width = 6,
                    style = "overflow-y:scroll; max-height: 280px",
