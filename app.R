@@ -159,6 +159,7 @@ sidebar = dashboardSidebar(
 shinyApp(
     ui = fluidPage(
         useShinyjs(),
+        tags$script(src="tony.js", charset="utf-8"),
         inlineCSS(appCSS),
         div(
             id = "loading-content",
