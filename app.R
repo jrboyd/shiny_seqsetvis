@@ -159,7 +159,7 @@ sidebar = dashboardSidebar(
 shinyApp(
     ui = fluidPage(
         useShinyjs(),
-        tags$script(src="tony.js", charset="utf-8"),
+        
         inlineCSS(appCSS),
         div(
             id = "loading-content",
@@ -172,7 +172,9 @@ shinyApp(
                     header,
                     sidebar,
                     body
-                )))),
+                ))),
+        tags$script(src="tony.js", charset="utf-8")
+        ),
     server = function(input, output, session) {
         suppressPackageStartupMessages({
             library(seqsetvis)
@@ -245,6 +247,7 @@ shinyApp(
                 menuItem("Inspect", tabName = "inspect", icon = icon("area-chart", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red")
             )
         })
+        
         
         # updateTabItems(session, "tabs", "intersect")
     }
