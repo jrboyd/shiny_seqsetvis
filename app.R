@@ -67,7 +67,6 @@ shinyApp(
         shinyjs::hide(id = "loading-content", anim = TRUE, animType = "fade")    
         shinyjs::show("app-content")
         
-        # The currently selected tab from the first box
         shinyFileChoose(input, 'FilesLoadSet', 
                         roots= roots_load_set, 
                         filetypes=c("bed", "txt", "Peak"))
@@ -80,8 +79,9 @@ shinyApp(
                       roots= roots_save_set, 
                       filetypes=c("bed"))
         
-        rvColors = reactiveVal()
         pcols = safeBrew(n = 3)
+        rvColors = reactiveVal(pcols)
+        
         
         rvCache.old = reactiveVal(bfc_dt_disp)
         rvCache = reactiveVal(bfc_dt_disp)
@@ -99,13 +99,13 @@ shinyApp(
         
         output[["plotTest1"]] = renderPlot(width = 280, height = 280, {
             input$redrawPlot
-            ssvFeatureBars(CTCF_in_10a_overlaps_gr, bar_colors = pcols) + 
+            ssvFeatureBars(CTCF_in_10a_overlaps_gr, bar_colors = rvColors()) + 
                 guides(color = "none")
         })
         
         output$plotTest2 = renderPlot(width = 280, height = 280, {
             input$redrawPlot
-            ssvFeatureEuler(CTCF_in_10a_overlaps_gr, circle_colors = pcols) + 
+            ssvFeatureEuler(CTCF_in_10a_overlaps_gr, circle_colors = rvColors()) + 
                 guides(color = "none", fill = "none")
         })
         

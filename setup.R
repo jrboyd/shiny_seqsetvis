@@ -63,4 +63,13 @@ cursor: pointer;
 .box-header:active {
 background: #aaaaaa !important;
 }
+.box-tools:focus {
+outline: none !important;
+}
+.fa:focus {
+outline: none !important;
+}
+.btn-box-tool:active:focus {
+outline: none !important;
+}
 "

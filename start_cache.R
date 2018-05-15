@@ -1,5 +1,5 @@
 
-bfc = BiocFileCache(".cache")
+bfc_data = BiocFileCache(".cache_data")
 urls = CTCF_in_10a_bigWig_urls
 url_df = as.data.frame(matrix(unlist(strsplit(names(urls), "_")), ncol = 2, byrow = TRUE))
 colnames(url_df) = c("CELL", "MARK")
@@ -27,7 +27,7 @@ RNAMES = apply(
 
 cache_df = data.frame(RNAMES, urls, stringsAsFactors = FALSE)
 for(i in seq_len(nrow(cache_df))){
-   bfcrpath(bfc, cache_df$urls[i], rnames = cache_df$RNAMES[i]) 
+   bfcrpath(bfc_data, cache_df$urls[i], rnames = cache_df$RNAMES[i]) 
 }
 ###
 urls = CTCF_in_10a_narrowPeak_urls
@@ -57,12 +57,12 @@ RNAMES = apply(
 
 cache_df = data.frame(RNAMES, urls, stringsAsFactors = FALSE)
 for(i in seq_len(nrow(cache_df))){
-    bfcrpath(bfc, cache_df$urls[i], rnames = cache_df$RNAMES[i]) 
+    bfcrpath(bfc_data, cache_df$urls[i], rnames = cache_df$RNAMES[i]) 
 }
 
 library(data.table)
-rnamel = strsplit(bfcinfo(bfc)$rname, ",")
-names(rnamel) = bfcinfo(bfc)$rid
+rnamel = strsplit(bfcinfo(bfc_data)$rname, ",")
+names(rnamel) = bfcinfo(bfc_data)$rid
 rnamel = lapply(rnamel, function(x)data.table(attrib = x))
 bfc_dt = rbindlist(rnamel, use.names = TRUE, idcol = "id")
 bfc_dt[, c("parameter", "value") := tstrsplit(attrib, "=")]
@@ -71,7 +71,7 @@ bfc_dt = dcast(bfc_dt, id ~ parameter)
 o = c(REQ_CN, setdiff(colnames(bfc_dt), REQ_CN))
 bfc_dt = bfc_dt[, o, with = FALSE]
 bfc_dt$fpath = sapply(bfc_dt$id, function(id){
-    bfcpath(bfc, id)[1]
+    bfcpath(bfc_data, id)[1]
 })
 
 bfc_dt_disp = bfc_dt[, 
