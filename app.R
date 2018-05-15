@@ -13,113 +13,13 @@ suppressPackageStartupMessages({
     library(magrittr)
     library(shinyFiles)
     library(shinycssloaders)
+    library(BiocFileCache)
 })
 source("functions_app.R")
+source("setup.R")
 
-appCSS <- "
-#loading-content {
-  position: absolute;
-  background: #000000;
-  opacity: 0.9;
-  z-index: 100;
-  left: 0;
-  right: 0;
-  height: 100%;
-  text-align: center;
-  color: #FFFFFF;
-}
-
-"
-
-bw_cache_path = "~/ShinyApps/shiny_peak_data/cached_profiles"
-bed_path = "~/ShinyApps/shiny_peak_data/beds/"
-names(bed_path) = "intersectR"
-
-user_roots = dir("/slipstream/home/", full.names = T) %>% paste0(. , "/ShinyData")
-user_roots = subset(user_roots, dir.exists(user_roots))
-names(user_roots) = dirname(user_roots) %>% basename()
-qcframework_load <<- dir("/slipstream/galaxy/uploads/working/qc_framework", pattern = "^output", full.names = T)
-
-names(qcframework_load) <- basename(qcframework_load)
-roots_load_set = c(bed_path, user_roots, qcframework_load)
-roots_load_set = roots_load_set[dir.exists(roots_load_set)]
-# names(roots_load_set) <- basename(roots_load_set)
-roots_load_bw <<- c("/slipstream/galaxy/production/galaxy-dist/static/UCSCtracks/", 
-                    qcframework_load)
-names(roots_load_bw) <- basename(roots_load_bw)
-roots_load_bw = c(user_roots, roots_load_bw)
-roots_load_bw = roots_load_bw[dir.exists(roots_load_bw)]
-
-roots_save_set = c(bed_path, user_roots)
-roots_save_set = roots_save_set[dir.exists(roots_save_set)]
-
-shinyFiles2load = function(shinyF, roots){
-    root_path = roots[shinyF$root]
-    rel_path = paste0(unlist(shinyF$files), collapse = "/")
-    file_path = paste0(root_path, "/", rel_path)
-    return(file_path)
-}
-
-shinyFiles2save = function(shinyF, roots){
-    root_path = roots[shinyF$root]
-    rel_path = paste0(unlist(shinyF$name), collapse = "/")
-    file_path = paste0(root_path, "/", rel_path)
-    return(file_path)
-}
-
-bw_cache_path = "~/ShinyApps/shiny_peak_data/cached_profiles"
-bed_path = "~/ShinyApps/shiny_peak_data/beds/"
-names(bed_path) = "intersectR"
-
-
-
-
-header = dashboardHeader(
-    
-    dropdownMenu(
-        type = "notifications", 
-        icon = icon("question-circle"),
-        badgeStatus = NULL,
-        headerText = "See also:",
-        
-        notificationItem("shiny", icon = icon("file"),
-                         href = "http://shiny.rstudio.com/"),
-        notificationItem("shinydashboard", icon = icon("file"),
-                         href = "https://rstudio.github.io/shinydashboard/")
-    ),
-    title = "seqsetvis"
-)
-body <- dashboardBody(
-    tabItems(
-        tabItem(tabName = "load",
-                h2("Load"),
-                tags$hr(),
-                h3("Pick a bed file (ideally after annotating with peak_annotatR)"),
-                tags$hr(),
-                shinyFilesButton(id = "FilesLoadSet", label = "Find Files on Server", title = "Find Peaks to Annotate", multiple = F),
-                fileInput(inputId = "UploadLoadSet", label = "Browse Local Files"),
-                tags$hr()
-        ),
-        tabItem(tabName = "intersect", 
-                h2("Intersect"),
-                actionButton("redrawPlot", label = "Redraw"),
-                tags$br(),
-                tags$br(),
-                fluidRow(
-                    # tags$div(
-                    shiny_ssvPlotBox("Bars", 1, "plotTest1", collapsed = FALSE),
-                    shiny_ssvPlotBox("Euler", 2, "plotTest2"),
-                    shiny_ssvPlotBox("Membership Map", 3, "plotTest3"),
-                    shiny_ssvPlotBox("Venn", 4, "plotTest4"),
-                    shiny_ssvPlotBox("Line - aggregated", 5, "plotTest5")
-                    
-                )
-        ),
-        tabItem(tabName = "inspect",
-                h2("Inspect")       
-        )
-    )
-)
+source("ui_header.R")
+source("ui_body.R")
 
 sidebar = dashboardSidebar(
     sidebarMenuOutput("menu")
@@ -128,8 +28,8 @@ sidebar = dashboardSidebar(
 shinyApp(
     ui = fluidPage(
         useShinyjs(),
-        
         inlineCSS(appCSS),
+        inlineCSS(btnCSS),
         div(
             id = "loading-content",
             # h2("Loading...", class="centerPseudo")
@@ -143,32 +43,26 @@ shinyApp(
                     sidebar,
                     body
                 ))),
-        tags$script(src="tony.js", charset="utf-8")#,
-        # tags$script(src="www/centering.css")
+        tags$script(src="tony.js", charset="utf-8")
     ),
     server = function(input, output, session) {
         # Stop app when browser tab closed
         session$onSessionEnded(stopApp)
         
-        tmp.sink = suppressPackageStartupMessages({
-            libs_tl = c(
+        load_libs_withProgress(
+            libs = c(
                 "data.table",
                 "rtracklayer",
                 "GenomicRanges",
                 "ggplot2",
                 "cowplot",
                 "seqsetvis"
-            )
-            withProgress(message = 'Loading libraries', value = 0, max = length(libs_tl), {
-                for(i in seq_along(libs_tl)){
-                    incProgress(1, message = libs_tl[i],
-                                detail = paste0("(", i, "/", length(libs_tl), ")"))
-                    library(libs_tl[i], character.only = TRUE)
-                }
-                
-                
-            })
-        })
+            ), 
+            session = session
+        )
+        
+        source("start_cache.R")
+        
         # Hide the loading message when the rest of the server function has executed
         shinyjs::hide(id = "loading-content", anim = TRUE, animType = "fade")    
         shinyjs::show("app-content")
@@ -186,9 +80,24 @@ shinyApp(
                       roots= roots_save_set, 
                       filetypes=c("bed"))
         
-        pcols = safeBrew(3, pal = "Dark2")
+        rvColors = reactiveVal()
+        pcols = safeBrew(n = 3)
         
-        output$plotTest1 = renderPlot(width = 280, height = 280, {
+        rvCache.old = reactiveVal(bfc_dt_disp)
+        rvCache = reactiveVal(bfc_dt_disp)
+        
+        output$DT_cache = DT::renderDataTable({
+            DT::datatable(rvCache(), filter = "top", options = list(pageLength = 10, scrollX = T))
+        })
+        
+        rvActive.old = reactiveVal(bfc_dt_disp[numeric()])
+        rvActive = reactiveVal(bfc_dt_disp[numeric()])
+        
+        output$DT_active = DT::renderDataTable({
+            DT::datatable(rvActive(), filter = "top", options = list(pageLength = 10, scrollX = T))
+        })
+        
+        output[["plotTest1"]] = renderPlot(width = 280, height = 280, {
             input$redrawPlot
             ssvFeatureBars(CTCF_in_10a_overlaps_gr, bar_colors = pcols) + 
                 guides(color = "none")
@@ -229,8 +138,10 @@ shinyApp(
                 menuItem("Load", 
                          tabName = "load", 
                          icon = icon("file-o", lib = "font-awesome"), 
-                         badgeLabel = "!", badgeColor = "red"),
-                menuItem("Intersect", tabName = "intersect", icon = icon("bar-chart", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red", selected = TRUE),
+                         badgeLabel = "!", 
+                         badgeColor = "red", 
+                         selected = TRUE),
+                menuItem("Intersect", tabName = "intersect", icon = icon("bar-chart", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red"),
                 menuItem("Inspect", tabName = "inspect", icon = icon("area-chart", lib = "font-awesome"), badgeLabel = "!", badgeColor = "red")
             )
         })

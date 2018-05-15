@@ -1,3 +1,31 @@
+load_libs_withProgress = function(libs, session){
+    tmp.sink = suppressPackageStartupMessages({
+        # libs = c(
+        #     "data.table",
+        #     "rtracklayer",
+        #     "GenomicRanges",
+        #     "ggplot2",
+        #     "cowplot",
+        #     "seqsetvis"
+        # )
+        withProgress(session = session, 
+                     message = 'Loading libraries', 
+                     value = 0, 
+                     max = length(libs),  
+                     expr = {
+                         for(i in seq_along(libs)){
+                             incProgress(session = session,
+                                         amount = 1, 
+                                         message = libs[i],
+                                         detail = paste0("(", i, "/", length(libs), ")"))
+                             library(libs[i], character.only = TRUE)
+                         }
+                         
+                         
+                     })
+    })
+}
+
 shiny_ssvPlotBox = function(box_title = "Main Plot", id = 1, plot_id = "plotTest", collapsed = TRUE){
     id = as.character(id)
     mybox = box(title = box_title, collapsible = TRUE, collapsed = collapsed, solidHeader = TRUE, status = "primary", 

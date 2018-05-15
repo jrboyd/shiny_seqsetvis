@@ -1,4 +1,3 @@
-jQuery('.box').css("cursor","pointer");
-jQuery('.box').click(function() {
+jQuery('.box-header').click(function() {
     $(this).toggleBox();
 });
