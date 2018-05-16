@@ -16,6 +16,7 @@ suppressPackageStartupMessages({
     library(BiocFileCache)
 })
 source("functions_app.R")
+source("class_ssv_config.R")
 source("setup.R")
 
 source("ui_header.R")
@@ -82,6 +83,7 @@ shinyApp(
         pcols = safeBrew(n = 3)
         rvColors = reactiveVal(pcols)
         
+        bfc_dt_disp = bfc2table(bfc_data, displayOnly = TRUE)
         
         rvCache.old = reactiveVal(bfc_dt_disp)
         rvCache = reactiveVal(bfc_dt_disp)
@@ -95,6 +97,10 @@ shinyApp(
         
         output$DT_active = DT::renderDataTable({
             DT::datatable(rvActive(), filter = "top", options = list(pageLength = 10, scrollX = T))
+        })
+        
+        output$DT_configSelect = DT::renderDataTable({
+            DT::datatable(data.frame(1:60, factor(rep(LETTERS,3)[1:60])), filter = "top", options = list(pageLength = 10, scrollX = T, scrollY = TRUE))
         })
         
         output[["plotTest1"]] = renderPlot(width = 280, height = 280, {

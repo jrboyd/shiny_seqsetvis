@@ -38,13 +38,3 @@ cfg_get_path = function(cfg, ftype = "."){
     sbfc$rpath
 }
 
-cfg_get_color_by
-
-
-rid = bfcfilter(bfc_data, c("hg38", "CTCF", "MCF10"))$rid
-my_cfg = new(Class = "ssv_config", bfc_id = rid, bfc = bfc_data, color_var = "CELL", colors = safeBrew(3))
-
-ssv_config(bfc = bfc_data, bfc_id = rid, color_var = "CELL", colors = safeBrew(3))
-
-cfg_get_path(my_cfg, ftype = "bigWig")
-cfg_get_path(my_cfg, ftype = "narrowPeak")

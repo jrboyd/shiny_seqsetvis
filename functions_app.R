@@ -59,3 +59,28 @@ shiny_ssvPlotBox = function(box_title = "Main Plot", id = 1, plot_id = "plotTest
     # HTML(mybox)
     mybox
 }
+
+bfc2table = function(bfc, displayOnly = FALSE){
+    rnamel = strsplit(bfcinfo(bfc)$rname, ",")
+    names(rnamel) = bfcinfo(bfc)$rid
+    rnamel = lapply(rnamel, function(x)data.table(attrib = x))
+    bfc_dt = rbindlist(rnamel, use.names = TRUE, idcol = "id")
+    bfc_dt[, c("parameter", "value") := tstrsplit(attrib, "=")]
+    bfc_dt$attrib = NULL
+    bfc_dt = dcast(bfc_dt, id ~ parameter)
+    o = c(REQ_CN, setdiff(colnames(bfc_dt), REQ_CN))
+    bfc_dt = bfc_dt[, o, with = FALSE]
+    bfc_dt$fpath = sapply(bfc_dt$id, function(id){
+        bfcpath(bfc, id)[1]
+    })
+    if(displayOnly){
+        bfc_dt = bfc_dt[, 
+                        toupper(colnames(bfc_dt)) == colnames(bfc_dt), 
+                        with = FALSE]
+    }
+    for(i in seq_len(ncol(bfc_dt))){
+        cn = colnames(bfc_dt)[i]
+        bfc_dt[[cn]] = factor(bfc_dt[[cn]])
+    }
+    bfc_dt
+}

@@ -1,6 +1,7 @@
-
+library(BiocFileCache)
+library(seqsetvis)
 bfc_data = BiocFileCache(".cache_data")
-urls = CTCF_in_10a_bigWig_urls
+urls = seqsetvis::CTCF_in_10a_bigWig_urls
 url_df = as.data.frame(matrix(unlist(strsplit(names(urls), "_")), ncol = 2, byrow = TRUE))
 colnames(url_df) = c("CELL", "MARK")
 # url_df$URL = CTCF_in_10a_bigWig_urls
@@ -30,7 +31,7 @@ for(i in seq_len(nrow(cache_df))){
    bfcrpath(bfc_data, cache_df$urls[i], rnames = cache_df$RNAMES[i]) 
 }
 ###
-urls = CTCF_in_10a_narrowPeak_urls
+urls = seqsetvis::CTCF_in_10a_narrowPeak_urls
 url_df = as.data.frame(matrix(unlist(strsplit(names(urls), "_")), ncol = 2, byrow = TRUE))
 colnames(url_df) = c("CELL", "MARK")
 # url_df$URL = CTCF_in_10a_bigWig_urls
@@ -60,25 +61,11 @@ for(i in seq_len(nrow(cache_df))){
     bfcrpath(bfc_data, cache_df$urls[i], rnames = cache_df$RNAMES[i]) 
 }
 
-library(data.table)
-rnamel = strsplit(bfcinfo(bfc_data)$rname, ",")
-names(rnamel) = bfcinfo(bfc_data)$rid
-rnamel = lapply(rnamel, function(x)data.table(attrib = x))
-bfc_dt = rbindlist(rnamel, use.names = TRUE, idcol = "id")
-bfc_dt[, c("parameter", "value") := tstrsplit(attrib, "=")]
-bfc_dt$attrib = NULL
-bfc_dt = dcast(bfc_dt, id ~ parameter)
-o = c(REQ_CN, setdiff(colnames(bfc_dt), REQ_CN))
-bfc_dt = bfc_dt[, o, with = FALSE]
-bfc_dt$fpath = sapply(bfc_dt$id, function(id){
-    bfcpath(bfc_data, id)[1]
-})
+rid = bfcfilter(bfc_data, c("hg38", "CTCF", "MCF10"))$rid
+my_cfg = new(Class = "ssv_config", bfc_id = rid, bfc = bfc_data, color_var = "CELL", colors = safeBrew(3))
 
-bfc_dt_disp = bfc_dt[, 
-                   toupper(colnames(bfc_dt)) == colnames(bfc_dt), 
-                   with = FALSE]
-for(i in seq_len(ncol(bfc_dt_disp))){
-    cn = colnames(bfc_dt_disp)[i]
-    bfc_dt_disp[[cn]] = factor(bfc_dt_disp[[cn]])
-}
+ssv_config(bfc = bfc_data, bfc_id = rid, color_var = "CELL", colors = safeBrew(3))
+
+cfg_get_path(my_cfg, ftype = "bigWig")
+cfg_get_path(my_cfg, ftype = "narrowPeak")
 

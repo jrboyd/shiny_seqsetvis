@@ -3,12 +3,30 @@ body <- dashboardBody(
         tabItem(tabName = "load",
                 h2("Load"),
                 tags$hr(),
-                DT::dataTableOutput(outputId = "DT_cache"),
-                h3("Pick a bed file (ideally after annotating with peak_annotatR)"),
-                tags$hr(),
-                shinyFilesButton(id = "FilesLoadSet", label = "Find Files on Server", title = "Find Peaks to Annotate", multiple = F),
-                fileInput(inputId = "UploadLoadSet", label = "Browse Local Files"),
-                tags$hr()
+                tabsetPanel(type = "tabs",
+                            tabPanel(
+                                "Use Config", 
+                                h3("Available Configurations"),
+                                DT::dataTableOutput(outputId = "DT_configSelect")
+                                
+                            ),
+                            tabPanel(
+                                "Create Config", 
+                                h3("Available Files"),
+                                DT::dataTableOutput(outputId = "DT_cache")
+                            ),
+                            tabPanel(
+                                "Add Files", 
+                                h3("Add Files To System"),
+                                tags$hr(),
+                                shinyFilesButton(id = "FilesLoadSet", 
+                                                 label = "Find Files on Server", 
+                                                 title = "Find Peaks to Annotate", 
+                                                 multiple = F),
+                                fileInput(inputId = "UploadLoadSet", 
+                                          label = "Browse Local Files")
+                            )
+                )
         ),
         tabItem(tabName = "intersect", 
                 h2("Intersect"),
