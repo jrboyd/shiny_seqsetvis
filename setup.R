@@ -46,30 +46,46 @@ text-align: center;
 color: #FFFFFF;
 }
 "
-
 btnCSS <- "
-.btn-box-tool:hover {
+.my_plotbox .btn-box-tool:hover {
 background: transparent !important;
 border-style: none !important;
 }
-.btn-box-tool:active {
+.my_plotbox .btn-box-tool:active {
 background: transparent !important;
 border-style: none !important;
 }
-.box-header:hover {
+.my_plotbox .box-header:hover {
 background: #606c84 !important;
-cursor: pointer;
+cursor: pointer !important;
 }
-.box-header:active {
+.my_plotbox .box-header:active {
 background: #aaaaaa !important;
 }
-.box-tools:focus {
+.my_plotbox .box-tools:focus {
 outline: none !important;
 }
-.fa:focus {
+.my_plotbox .fa:focus {
 outline: none !important;
 }
-.btn-box-tool:active:focus {
+.my_plotbox .btn-box-tool:active:focus {
 outline: none !important;
+}
+"
+
+boxCSS = "
+.my_plotbox .loader, 
+.my_plotbox .loader:before, 
+.my_plotbox .loader:after {
+height: 300px !important;
+color: red !important;
+background: red !important;
+}
+"
+boxCSS = ""
+
+tblCSS = "
+.td:active {
+user-select: none !important;
 }
 "

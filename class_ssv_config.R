@@ -6,11 +6,12 @@ setClass("ssv_config", list(
     colors = "character"
 ))
 ssv_config = function(bfc, bfc_id, color_var, colors){
-    new(Class = "ssv_config", 
-        bfc = bfc_data, 
-        bfc_id = rid, 
-        color_var = "CELL", 
-        colors = safeBrew(3))
+    obj = new(Class = "ssv_config", 
+        bfc = bfc, 
+        bfc_id = bfc_id, 
+        color_var = color_var, 
+        colors = colors)
+    cfg_set_color_mapping(obj, colors)
 }
 
 setMethod("initialize", "ssv_config", 
@@ -36,5 +37,30 @@ cfg_get_path = function(cfg, ftype = "."){
         sbfc = cfg@bfc
     }
     sbfc$rpath
+}
+
+cfg_get_color_groups = function(cfg){
+    as.character(sort(unique(make_bfc_table(cfg@bfc)[id %in% cfg@bfc_id][[cfg@color_var]])))
+}
+
+color_mapping  = function(cfg, colMap = character()){
+    grps = cfg_get_color_groups(cfg)
+    if(length(grps) < length(colMap)){
+        colMap = colMap[seq_along(grps)]
+    }
+    if(length(grps) > length(colMap)){
+        nmiss = length(grps) - length(colMap)
+        colMap = c(colMap, safeBrew(nmiss))
+    }
+    colMap = seqsetvis::col2hex(colMap)
+    if(is.null(names(colMap))){
+        names(colMap) = grps
+    }
+    colMap
+}
+
+cfg_set_color_mapping = function(cfg, colMap = character()){
+    cfg@colors = color_mapping(cfg, colMap)
+    cfg
 }
 

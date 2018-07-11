@@ -6,3 +6,7 @@ inspectR
 intersectR
 ex_scroll.R
 .cach*
+tmp*html
+*.save
+test_html_parsing.R
+lib

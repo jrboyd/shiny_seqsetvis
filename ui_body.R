@@ -7,13 +7,15 @@ body <- dashboardBody(
                             tabPanel(
                                 "Use Config", 
                                 h3("Available Configurations"),
-                                DT::dataTableOutput(outputId = "DT_configSelect")
-                                
+                                withSpinner(DT::dataTableOutput(outputId = "DT_configSelect")),
+                                box(title = "Config Details", collapsible = FALSE, height = "300px",
+                                    withSpinner(uiOutput(outputId = "HTML_configDetail", height = "200px"), proxy.height = "200px")
+                                )
                             ),
                             tabPanel(
                                 "Create Config", 
                                 h3("Available Files"),
-                                DT::dataTableOutput(outputId = "DT_cache")
+                                withSpinner(DT::dataTableOutput(outputId = "DT_cache"))
                             ),
                             tabPanel(
                                 "Add Files", 
@@ -28,18 +30,18 @@ body <- dashboardBody(
                             )
                 )
         ),
-        tabItem(tabName = "intersect", 
+        tabItem(tabName = "intersect",
                 h2("Intersect"),
                 actionButton("redrawPlot", label = "Redraw"),
                 tags$br(),
                 tags$br(),
                 fluidRow(
                     # tags$div(
-                    shiny_ssvPlotBox("Bars", 1, "plotTest1", collapsed = FALSE),
-                    shiny_ssvPlotBox("Euler", 2, "plotTest2"),
-                    shiny_ssvPlotBox("Membership Map", 3, "plotTest3"),
-                    shiny_ssvPlotBox("Venn", 4, "plotTest4"),
-                    shiny_ssvPlotBox("Line - aggregated", 5, "plotTest5")
+                    shiny_ssvPlotBox("Bars", "intBars", collapsed = FALSE),
+                    shiny_ssvPlotBox("Euler", "intEuler"),
+                    shiny_ssvPlotBox("Membership Map", "intMemb"),
+                    shiny_ssvPlotBox("Venn", "intVenn"),
+                    shiny_ssvPlotBox("Line - aggregated", "intLineAgg")
                     
                 )
         ),

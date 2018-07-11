@@ -62,10 +62,37 @@ for(i in seq_len(nrow(cache_df))){
 }
 
 rid = bfcfilter(bfc_data, c("hg38", "CTCF", "MCF10"))$rid
-my_cfg = new(Class = "ssv_config", bfc_id = rid, bfc = bfc_data, color_var = "CELL", colors = safeBrew(3))
 
-ssv_config(bfc = bfc_data, bfc_id = rid, color_var = "CELL", colors = safeBrew(3))
+my_cfg = ssv_config(bfc = bfc_data, bfc_id = rid, color_var = "CELL", colors = safeBrew(3))
 
 cfg_get_path(my_cfg, ftype = "bigWig")
 cfg_get_path(my_cfg, ftype = "narrowPeak")
+
+var1_cfg = my_cfg
+
+var2_rid = c(bfcfilter(bfc_data, c("hg38", "CTCF", "MCF10AT1"))$rid,
+        bfcfilter(bfc_data, c("hg38", "CTCF", "MCF10CA1"))$rid)
+var2_cfg = ssv_config(bfc = bfc_data, bfc_id = var2_rid, color_var = "CELL", colors = safeBrew(3)[2:3])
+var3_cfg = ssv_config(bfc = bfc_data, bfc_id = rid, color_var = "CELL", colors = safeBrew(3, pal = "set1"))
+
+# file.remove(dir(".cache_configs/", full.names = TRUE))
+# file.remove(".cache_configs/")
+
+
+bfc_cfg = BiocFileCache(".cache_configs")
+cfgs = list("AF 10a progression CTCF" = var1_cfg, "AF at1 and ca1 CTCF" = var2_cfg, "AF 10a progression CTCF-recolor" = var3_cfg)
+for(i in seq_along(cfgs)){
+    rid = names(cfgs)[i]
+    if(nrow(bfcquery(bfc_cfg, query = rid)) < 1){
+        fpath = bfcnew(bfc_cfg, rid)
+        saveRDS(cfgs[[i]], file = fpath)
+    }
+}
+
+
+cfgs_rname = bfcinfo(bfc_cfg)$rname
+cfgs_list = lapply(cfgs_rname, function(rname){
+    readRDS(bfcrpath(bfc_cfg, rnames = paste0("^", rname, "$")))    
+})
+names(cfgs_list) = cfgs_rname
 
