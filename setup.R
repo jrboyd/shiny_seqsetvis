@@ -89,3 +89,7 @@ tblCSS = "
 user-select: none !important;
 }
 "
+
+# #DT_configSelect {
+# select: { style: 'api' },
+# }
