@@ -26,6 +26,7 @@ sidebar = dashboardSidebar(
     sidebarMenuOutput("menu")
 )
 
+DEBUG = FALSE
 
 cb1 = DT::JS(
     "
@@ -55,8 +56,12 @@ shinyApp(
         inlineCSS(btnCSS),
         inlineCSS(tblCSS),
         inlineCSS(boxCSS),
-        p("debug out", id = "debugOut"),
-        p("debug details", id = "debugDetails"),
+        shinyjs::hidden(
+            div(id = "debug",
+                p("debug out", id = "debugOut"),
+                p("debug details", id = "debugDetails")
+            )
+        ),
         div(
             id = "loading-content",
             # h2("Loading...", class="centerPseudo")
@@ -73,6 +78,8 @@ shinyApp(
         tags$script(src="tony.js", charset="utf-8")
     ),
     server = function(input, output, session) {
+        
+        
         # Stop app when browser tab closed
         session$onSessionEnded(stopApp)
         
@@ -263,36 +270,39 @@ shinyApp(
             )
         })
         
-        observeEvent(input$DT_configSelect_rows_selected,
-                     {
-                         showNotification(paste("configSelect selected:", paste(input$DT_configSelect_rows_selected, collapse = " ")))
-                     })
-        
-        observeEvent(input$DT_configSelect_rows_all,
-                     {
-                         showNotification(paste("configSelect all:", paste(input$DT_configSelect_rows_all , collapse = " ")))
-                     })
-        
-        observeEvent(input$DT_active_rows_selected,
-                     {
-                         showNotification(paste("active selected:", paste(input$DT_active_rows_selected, collapse = " ")))
-                     })
-        
-        observeEvent(input$DT_active_rows_all,
-                     {
-                         showNotification(paste("active all:", paste(input$DT_active_rows_all , collapse = " ")))
-                     })
-        
-        observeEvent(input$DT_cache_rows_selected,
-                     {
-                         showNotification(paste("cache selected:", paste(input$DT_cache_rows_selected, collapse = " ")))
-                     })
-        
-        observeEvent(input$DT_cache_rows_all,
-                     {
-                         showNotification(paste("cache all:", paste(input$DT_cache_rows_all , collapse = " ")))
-                     })
-        
+        if(DEBUG){
+            shinyjs::show(id = "debug")
+            
+            observeEvent(input$DT_configSelect_rows_selected,
+                         {
+                             showNotification(paste("configSelect selected:", paste(input$DT_configSelect_rows_selected, collapse = " ")))
+                         })
+            
+            observeEvent(input$DT_configSelect_rows_all,
+                         {
+                             showNotification(paste("configSelect all:", paste(input$DT_configSelect_rows_all , collapse = " ")))
+                         })
+            
+            observeEvent(input$DT_active_rows_selected,
+                         {
+                             showNotification(paste("active selected:", paste(input$DT_active_rows_selected, collapse = " ")))
+                         })
+            
+            observeEvent(input$DT_active_rows_all,
+                         {
+                             showNotification(paste("active all:", paste(input$DT_active_rows_all , collapse = " ")))
+                         })
+            
+            observeEvent(input$DT_cache_rows_selected,
+                         {
+                             showNotification(paste("cache selected:", paste(input$DT_cache_rows_selected, collapse = " ")))
+                         })
+            
+            observeEvent(input$DT_cache_rows_all,
+                         {
+                             showNotification(paste("cache all:", paste(input$DT_cache_rows_all , collapse = " ")))
+                         })
+        }
         # changes starting tab
         # updateTabItems(session, "tabs", "intersect")
     }
