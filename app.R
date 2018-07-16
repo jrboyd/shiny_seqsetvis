@@ -122,28 +122,73 @@ shinyApp(
         rvCache.old = reactiveVal(bfc_dt_disp)
         rvCache = reactiveVal(bfc_dt_disp)
         
+        rvCacheForCfg = reactiveVal(integer())
+        
+        get_cache_avail_rows = function(){
+            cached_files = rvCache()
+            avail = setdiff(seq_len(nrow(cached_files)), rvCacheForCfg())
+            avail
+        }
+        
+        sel_row_to_cache_row = function(sel_row){
+            avail = get_cache_avail_rows()
+            avail[sel_row]
+        }
+        
+        rm_sel_row_from_cache_row = function(sel_row){
+            all = seq_len(nrow(rvCache()))
+            avail = get_cache_avail_rows()
+            added = setdiff(all, avail)
+            added[sel_row]
+            # c(3, 6)
+        }
+        
         output$DT_cache = DT::renderDataTable({
-            DT::datatable(rvCache(), filter = "top", options = list(pageLength = 10, scrollX = T))
+            # cached_files = rvCache()
+            # avail = setdiff(seq_len(nrow(cached_files)), rvCacheForCfg())
+            avail = get_cache_avail_rows()
+            DT::datatable(rvCache()[avail,], filter = "top", options = list(pageLength = 10, scrollX = T))
         })
         
-        # rvActive.old = reactiveVal(bfc_dt_disp[numeric()])
-        # rvActive = reactiveVal(bfc_dt_disp[numeric()])
+        output$DT_newCfg = DT::renderDataTable({
+            cached_files = rvCache()
+            DT::datatable(cached_files[rvCacheForCfg(),], options = list(pageLength = 10, scrollX = T))
+        })
+        
+        observeEvent(
+            eventExpr = {
+                input$btnAddFileCfg
+            }, 
+            handlerExpr = {
+                toadd = input$DT_cache_rows_selected
+                old_rv = rvCacheForCfg()
+                rvCacheForCfg(sort(c(old_rv, sel_row_to_cache_row(toadd))))
+            }
+        )
+        
+        observeEvent(
+            eventExpr = {
+                input$btnRemoveFileCfg
+            }, 
+            handlerExpr = {
+                rm = rm_sel_row_from_cache_row(input$DT_newCfg_rows_selected)
+                print(rm)
+                old_rv = rvCacheForCfg()
+                message("old_rv: ", old_rv)
+                message("rm: ", rm)
+                rvCacheForCfg(sort(setdiff(old_rv, rm)))
+            }
+        )
         
         rvCfgTable = reactiveVal(make_cfg_table())
         rvLastSel = reactiveVal(NULL)
         
-        # output$DT_active = DT::renderDataTable({
-        #     DT::datatable(rvActive(), 
-        #                   filter = "top", 
-        #                   options = list(pageLength = 10, scrollX = T))
-        # })
         
         observeEvent(
             eventExpr = {
                 input$DT_configSelect_rows_selected
             }, 
             handlerExpr = {
-                print(input$DT_configSelect_rows_selected)
                 req(input$DT_configSelect_rows_selected)
                 new_sel = input$DT_configSelect_rows_selected
                 rvLastSel(new_sel)
@@ -164,6 +209,17 @@ shinyApp(
             req(cfgs_list)
             rvCfgTable()[rvLastSel(), "Description"]
         })
+        
+        ### Config Create
+        output$uiCfgColorBy = renderUI({
+            tags$div(id = "uiCfgColorByDiv",
+                     selectInput("selectColorBy", label = "Color By", choices = c("CELL", "MARK")),
+                     gen_color_picker_ui(grps = LETTERS[1:5], brew_name = "Dark2", is_free_color = FALSE)
+                     
+            )   
+        })
+        
+        
         
         output$HTML_configDetail = renderUI({
             req(rSelectedCfgDesc())
@@ -202,7 +258,6 @@ shinyApp(
         )
         
         output[["intBars"]] = renderPlot(width = 280, height = 280, {
-            print("draw bars")
             req(rSelectedCfgDesc())
             req(rvFeatures())
             input$redrawPlot

@@ -14,8 +14,15 @@ body <- dashboardBody(
                             ),
                             tabPanel(
                                 "Create Config", 
-                                h3("Available Files"),
-                                withSpinner(DT::dataTableOutput(outputId = "DT_cache"))
+                                h3("Step 1 : Select Files"),
+                                (DT::dataTableOutput(outputId = "DT_cache")),
+                                fluidRow(
+                                    actionButton("btnAddFileCfg", label = "+"),
+                                    actionButton("btnRemoveFileCfg", label = "-")
+                                ),
+                                (DT::dataTableOutput(outputId = "DT_newCfg")),
+                                h3("Step 2 : Configuration Settings"),
+                                uiOutput("uiCfgColorBy")
                             ),
                             tabPanel(
                                 "Add Files", 
@@ -40,13 +47,15 @@ body <- dashboardBody(
                     shiny_ssvPlotBox("Bars", "intBars", collapsed = FALSE),
                     shiny_ssvPlotBox("Euler", "intEuler"),
                     shiny_ssvPlotBox("Membership Map", "intMemb"),
-                    shiny_ssvPlotBox("Venn", "intVenn"),
-                    shiny_ssvPlotBox("Line - aggregated", "intLineAgg")
+                    shiny_ssvPlotBox("Venn", "intVenn")
                     
                 )
         ),
         tabItem(tabName = "inspect",
-                h2("Inspect")       
+                h2("Inspect"),
+                fluidRow(
+                    shiny_ssvPlotBox("Line - aggregated", "intLineAgg", collapsed = FALSE)       
+                )
         )
     )
 )
