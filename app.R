@@ -10,6 +10,7 @@ suppressPackageStartupMessages({
     library(shiny)
     library(shinyjs)
     library(shinydashboard)
+    library(colourpicker)
     library(magrittr)
     library(shinyFiles)
     library(shinycssloaders)
@@ -18,6 +19,9 @@ suppressPackageStartupMessages({
 source("functions_app.R")
 source("class_ssv_config.R")
 source("setup.R")
+source("module_create_config.R")
+source("module_plots.R")
+source("module_debug.R")
 
 source("ui_header.R")
 source("ui_body.R")
@@ -51,16 +55,15 @@ e.preventDefault();
 
 shinyApp(
     ui = fluidPage(
+        #this appears to be necessary for any colorpicker to work
+        shinyjs::hidden(colourpicker::colourInput(inputId = "colTest", label = "colTest")),
         useShinyjs(),
         inlineCSS(appCSS),
         inlineCSS(btnCSS),
         inlineCSS(tblCSS),
         inlineCSS(boxCSS),
         shinyjs::hidden(
-            div(id = "debug",
-                p("debug out", id = "debugOut"),
-                p("debug details", id = "debugDetails")
-            )
+            ui_debug()
         ),
         div(
             id = "loading-content",
@@ -119,66 +122,9 @@ shinyApp(
         
         bfc_dt_disp = make_bfc_table(bfc_data, displayOnly = TRUE)
         
-        rvCache.old = reactiveVal(bfc_dt_disp)
-        rvCache = reactiveVal(bfc_dt_disp)
-        
-        rvCacheForCfg = reactiveVal(integer())
-        
-        get_cache_avail_rows = function(){
-            cached_files = rvCache()
-            avail = setdiff(seq_len(nrow(cached_files)), rvCacheForCfg())
-            avail
-        }
-        
-        sel_row_to_cache_row = function(sel_row){
-            avail = get_cache_avail_rows()
-            avail[sel_row]
-        }
-        
-        rm_sel_row_from_cache_row = function(sel_row){
-            all = seq_len(nrow(rvCache()))
-            avail = get_cache_avail_rows()
-            added = setdiff(all, avail)
-            added[sel_row]
-            # c(3, 6)
-        }
-        
-        output$DT_cache = DT::renderDataTable({
-            # cached_files = rvCache()
-            # avail = setdiff(seq_len(nrow(cached_files)), rvCacheForCfg())
-            avail = get_cache_avail_rows()
-            DT::datatable(rvCache()[avail,], filter = "top", options = list(pageLength = 10, scrollX = T))
-        })
-        
-        output$DT_newCfg = DT::renderDataTable({
-            cached_files = rvCache()
-            DT::datatable(cached_files[rvCacheForCfg(),], options = list(pageLength = 10, scrollX = T))
-        })
-        
-        observeEvent(
-            eventExpr = {
-                input$btnAddFileCfg
-            }, 
-            handlerExpr = {
-                toadd = input$DT_cache_rows_selected
-                old_rv = rvCacheForCfg()
-                rvCacheForCfg(sort(c(old_rv, sel_row_to_cache_row(toadd))))
-            }
-        )
-        
-        observeEvent(
-            eventExpr = {
-                input$btnRemoveFileCfg
-            }, 
-            handlerExpr = {
-                rm = rm_sel_row_from_cache_row(input$DT_newCfg_rows_selected)
-                print(rm)
-                old_rv = rvCacheForCfg()
-                message("old_rv: ", old_rv)
-                message("rm: ", rm)
-                rvCacheForCfg(sort(setdiff(old_rv, rm)))
-            }
-        )
+        ### config create
+        server_create_config(dt_table = bfc_dt_disp,
+                             input, output, session)
         
         rvCfgTable = reactiveVal(make_cfg_table())
         rvLastSel = reactiveVal(NULL)
@@ -197,7 +143,6 @@ shinyApp(
         
         output$DT_configSelect = DT::renderDataTable({
             DT::datatable(rvCfgTable(), rownames = FALSE,
-                          # callback = cb1a,
                           filter = "top", 
                           selection = list(mode = 'single', selected = 1, target = 'row'),
                           options = list(pageLength = 10, scrollX = T, scrollY = TRUE))
@@ -210,17 +155,8 @@ shinyApp(
             rvCfgTable()[rvLastSel(), "Description"]
         })
         
-        ### Config Create
-        output$uiCfgColorBy = renderUI({
-            tags$div(id = "uiCfgColorByDiv",
-                     selectInput("selectColorBy", label = "Color By", choices = c("CELL", "MARK")),
-                     gen_color_picker_ui(grps = LETTERS[1:5], brew_name = "Dark2", is_free_color = FALSE)
-                     
-            )   
-        })
         
-        
-        
+        ### config select
         output$HTML_configDetail = renderUI({
             req(rSelectedCfgDesc())
             cfg = rSelectedCfgDesc()
@@ -257,50 +193,10 @@ shinyApp(
             }
         )
         
-        output[["intBars"]] = renderPlot(width = 280, height = 280, {
-            req(rSelectedCfgDesc())
-            req(rvFeatures())
-            input$redrawPlot
-            ssvFeatureBars(rvFeatures(), bar_colors = rvColors()) + 
-                guides(color = "none")
-        })
-        
-        output$intEuler = renderPlot(width = 280, height = 280, {
-            req(rSelectedCfgDesc())
-            req(rvFeatures())
-            input$redrawPlot
-            ssvFeatureEuler(rvFeatures(), circle_colors = rvColors()) + 
-                guides(color = "none", fill = "none")
-        })
-        
-        output$intMemb = renderPlot(width = 280, height = 280, {
-            req(rSelectedCfgDesc())
-            req(rvFeatures())
-            input$redrawPlot
-            ssvFeatureBinaryHeatmap(rvFeatures(), raster_approximation = TRUE) + 
-                guides(color = "none")
-        })
-        
-        output$intVenn = renderPlot(width = 280, height = 280, {
-            req(rSelectedCfgDesc())
-            req(rvFeatures())
-            input$redrawPlot
-            ssvFeatureVenn(rvFeatures(), circle_colors = rvColors()) + 
-                # scale_color_manual(values = safeBrew(3, pal = "Dark2")) +
-                guides(color = "none", fill = "none")
-        })
-        
-        output$intLineAgg = renderPlot(width = 280, height = 280, {
-            req(rSelectedCfgDesc())
-            req(rvFeatures())
-            input$redrawPlot
-            ssvSignalLineplotAgg(rvSignals(), spline_n = 5) + 
-                scale_color_manual(values = rvColors()) +
-                theme_cowplot() + guides(color = "none")
-        })
+        server_plots(rvColors, rvFeatures, rvSignals,
+                     input, output, session)
         
         ### menus
-        
         output$tabset1Selected <- renderText({
             input$tabset1
         })
@@ -326,37 +222,7 @@ shinyApp(
         })
         
         if(DEBUG){
-            shinyjs::show(id = "debug")
-            
-            observeEvent(input$DT_configSelect_rows_selected,
-                         {
-                             showNotification(paste("configSelect selected:", paste(input$DT_configSelect_rows_selected, collapse = " ")))
-                         })
-            
-            observeEvent(input$DT_configSelect_rows_all,
-                         {
-                             showNotification(paste("configSelect all:", paste(input$DT_configSelect_rows_all , collapse = " ")))
-                         })
-            
-            observeEvent(input$DT_active_rows_selected,
-                         {
-                             showNotification(paste("active selected:", paste(input$DT_active_rows_selected, collapse = " ")))
-                         })
-            
-            observeEvent(input$DT_active_rows_all,
-                         {
-                             showNotification(paste("active all:", paste(input$DT_active_rows_all , collapse = " ")))
-                         })
-            
-            observeEvent(input$DT_cache_rows_selected,
-                         {
-                             showNotification(paste("cache selected:", paste(input$DT_cache_rows_selected, collapse = " ")))
-                         })
-            
-            observeEvent(input$DT_cache_rows_all,
-                         {
-                             showNotification(paste("cache all:", paste(input$DT_cache_rows_all , collapse = " ")))
-                         })
+            server_debug(input, output, session)
         }
         # changes starting tab
         # updateTabItems(session, "tabs", "intersect")

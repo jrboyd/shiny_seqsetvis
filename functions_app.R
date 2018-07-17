@@ -206,11 +206,11 @@ gen_color_picker_ui = function(grps, brew_name, is_free_color){
         g = gsub("/", "_", g)
         
         if(is_free_color){
-            ginput = colourpicker::colourInput(inputId = paste0("color_", g),
+            ginput = colourInput(inputId = paste0("color_", g),
                                  label = g,
                                  value = colorChoices[i])
         }else{
-            ginput = colourpicker::colourInput(inputId = paste0("color_", g),
+            ginput = colourInput(inputId = paste0("color_", g),
                                  label = g,
                                  value = colorChoices[i],
                                  palette = "limited",

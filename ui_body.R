@@ -14,15 +14,7 @@ body <- dashboardBody(
                             ),
                             tabPanel(
                                 "Create Config", 
-                                h3("Step 1 : Select Files"),
-                                (DT::dataTableOutput(outputId = "DT_cache")),
-                                fluidRow(
-                                    actionButton("btnAddFileCfg", label = "+"),
-                                    actionButton("btnRemoveFileCfg", label = "-")
-                                ),
-                                (DT::dataTableOutput(outputId = "DT_newCfg")),
-                                h3("Step 2 : Configuration Settings"),
-                                uiOutput("uiCfgColorBy")
+                                ui_create_config()
                             ),
                             tabPanel(
                                 "Add Files", 
