@@ -39,14 +39,71 @@ server_create_config = function(dt_table, input, output, session){
     )
     
     output$uiCfgColorBy = renderUI({
-        cached_files = rvalsDataFiles$table
-        grps = cached_files[rvalsDataFiles$idx_in_cfg, "CELL"]
-        tags$div(id = "uiCfgColorByDiv",
-                 selectInput("selectColorBy", label = "Color By", choices = c("CELL", "MARK")),
-                 gen_color_picker_ui(grps = grps, brew_name = "Dark2", is_free_color = FALSE)
-                 
-        )   
+        selectInput(inputId = "selectColorBy", label = "Color By", choices = c("CELL", "MARK"))
     })
+    
+    ### use table to move group items up and down
+    rvColorsOrder = reactiveVal(data.frame(num = 1:10, let = letters[1:10]))
+    
+    output$DT_colorsOrder = DT::renderDataTable({
+        cached_files = rvalsDataFiles$table
+        grps = unique(cached_files[rvalsDataFiles$idx_in_cfg, ][[input$selectColorBy]])
+        DT::datatable(rvColorsOrder(), 
+                      selection = list(mode = "single", selected = 1, target = "row"),
+                      options = list(processing = FALSE), 
+                      rownames = FALSE)
+    })
+    
+    proxy_colorsOrder = dataTableProxy('DT_colorsOrder')
+    
+    observeEvent(
+        eventExpr = {
+            input$btnMoveGrpUp
+        }, 
+        handlerExpr = {
+            rs = input$DT_colorsOrder_rows_selected
+            co = rvColorsOrder()
+            o = seq_len(nrow(co))
+            o[rs] = o[rs] - 1.5
+            DT::replaceData(proxy = proxy_colorsOrder, co[order(o), ])
+            DT::selectRows(proxy = proxy_colorsOrder, 
+                           selected = max(input$DT_colorsOrder_rows_selected - 1, 1))
+            # rvColorsOrder(co[order(o), ])
+            # rvColorsOrderSel(max(input$DT_colorsOrder_rows_selected - 1, 1))
+        }
+    )
+    
+    observeEvent(
+        eventExpr = {
+            input$btnMoveGrpDown
+        }, 
+        handlerExpr = {
+            rs = input$DT_colorsOrder_rows_selected
+            co = rvColorsOrder()
+            o = seq_len(nrow(co))
+            o[rs] = o[rs] + 1.5
+            DT::replaceData(proxy = proxy_colorsOrder, co[order(o), ])
+            DT::selectRows(proxy = proxy_colorsOrder, 
+                           selected = min(input$DT_colorsOrder_rows_selected + 1, nrow(co)))
+            # rvColorsOrder(co[order(o), ])
+            # rvColorsOrderSel(min(input$DT_colorsOrder_rows_selected + 1, nrow(co)))
+        }
+    )
+    ###
+    
+    ### generate color pickers for every group item
+    output$uiCfgColorPickers = renderUI({
+        cached_files = rvalsDataFiles$table
+        grps = unique(cached_files[rvalsDataFiles$idx_in_cfg, ][[input$selectColorBy]])
+        if(length(grps) < 1){
+            return(tags$p("waiting for selection"))
+        }
+        # grps <<- grps
+        # cached_files <<- cached_files
+        # save.image()
+        gen_color_picker_ui(grps = grps, brew_name = "Dark2", is_free_color = FALSE)
+    })
+    ###
 }
 
 ui_create_config = function(){
@@ -59,6 +116,15 @@ ui_create_config = function(){
         ),
         (DT::dataTableOutput(outputId = "DT_filesNewCfg")),
         h3("Step 2 : Configuration Settings"),
-        uiOutput("uiCfgColorBy")
+        tags$div(id = "uiCfgColorByDiv",
+                 uiOutput("uiCfgColorBy"),
+                 DT::dataTableOutput(outputId = "DT_colorsOrder"),
+                 # uiOutput("uiCfgColorOrder"),
+                 uiOutput("uiCfgColorPickers"),
+                 fluidRow(
+                     actionButton("btnMoveGrpDown", label = "+"),
+                     actionButton("btnMoveGrpUp", label = "-")
+                 )
+        )
     )
 }

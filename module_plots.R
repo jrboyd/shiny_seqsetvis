@@ -47,3 +47,18 @@ server_plots = function(get_colors, get_features, get_signals, input, output, se
             theme_cowplot() + guides(color = "none")
     })
 }
+
+ui_plots_features = function(){
+    fluidRow(
+        shiny_ssvPlotBox("Bars", "intBars", collapsed = FALSE),
+        shiny_ssvPlotBox("Euler", "intEuler"),
+        shiny_ssvPlotBox("Membership Map", "intMemb"),
+        shiny_ssvPlotBox("Venn", "intVenn")
+    )
+}
+
+ui_plots_signals = function(){
+    fluidRow(
+        shiny_ssvPlotBox("Line - aggregated", "intLineAgg", collapsed = FALSE)       
+    )
+}

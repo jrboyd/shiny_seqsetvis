@@ -34,20 +34,11 @@ body <- dashboardBody(
                 actionButton("redrawPlot", label = "Redraw"),
                 tags$br(),
                 tags$br(),
-                fluidRow(
-                    # tags$div(
-                    shiny_ssvPlotBox("Bars", "intBars", collapsed = FALSE),
-                    shiny_ssvPlotBox("Euler", "intEuler"),
-                    shiny_ssvPlotBox("Membership Map", "intMemb"),
-                    shiny_ssvPlotBox("Venn", "intVenn")
-                    
-                )
+                ui_plots_features()
         ),
         tabItem(tabName = "inspect",
                 h2("Inspect"),
-                fluidRow(
-                    shiny_ssvPlotBox("Line - aggregated", "intLineAgg", collapsed = FALSE)       
-                )
+                ui_plots_signals()
         )
     )
 )
