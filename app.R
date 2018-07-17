@@ -67,7 +67,6 @@ shinyApp(
         ),
         div(
             id = "loading-content",
-            # h2("Loading...", class="centerPseudo")
             h2("Loading...")
         ),
         hidden(
@@ -78,7 +77,7 @@ shinyApp(
                     sidebar,
                     body
                 ))),
-        tags$script(src="tony.js", charset="utf-8")
+        tags$script(src="jrb_customize.js", charset="utf-8")
     ),
     server = function(input, output, session) {
         
