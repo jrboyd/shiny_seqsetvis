@@ -44,15 +44,21 @@ server_create_config = function(dt_table, input, output, session){
     
     ### use table to move group items up and down
     rvColorsOrder = reactiveVal(data.frame(num = 1:10, let = letters[1:10]))
+    rvColorsOrderSel = reactiveVal(1)
     
-    output$DT_colorsOrder = DT::renderDataTable({
-        cached_files = rvalsDataFiles$table
-        grps = unique(cached_files[rvalsDataFiles$idx_in_cfg, ][[input$selectColorBy]])
-        DT::datatable(rvColorsOrder(), 
-                      selection = list(mode = "single", selected = 1, target = "row"),
-                      options = list(processing = FALSE), 
-                      rownames = FALSE)
-    })
+    output$DT_colorsOrder = DT::renderDataTable(
+        {
+            cached_files = rvalsDataFiles$table
+            if(length(rvalsDataFiles$idx_in_cfg) > 0){
+                grps = unique(cached_files[rvalsDataFiles$idx_in_cfg, ][[input$selectColorBy]])
+            }
+            
+            isolate(DT::datatable(rvColorsOrder(), 
+                                  options = list(processing = FALSE),
+                                  selection = list(mode = "single", selected = 1, target = "row"),
+                                  rownames = FALSE))
+        }
+    )
     
     proxy_colorsOrder = dataTableProxy('DT_colorsOrder')
     
@@ -63,11 +69,14 @@ server_create_config = function(dt_table, input, output, session){
         handlerExpr = {
             rs = input$DT_colorsOrder_rows_selected
             co = rvColorsOrder()
+            showNotification(as.character(nrow(co)))
             o = seq_len(nrow(co))
             o[rs] = o[rs] - 1.5
-            DT::replaceData(proxy = proxy_colorsOrder, co[order(o), ])
-            DT::selectRows(proxy = proxy_colorsOrder, 
-                           selected = max(input$DT_colorsOrder_rows_selected - 1, 1))
+            co = co[order(o), ]
+            rvColorsOrder(co)
+            print(rvColorsOrder())
+            DT::replaceData(proxy = proxy_colorsOrder, data = co, rownames = FALSE)
+            DT::selectRows(proxy = proxy_colorsOrder, selected = max(input$DT_colorsOrder_rows_selected - 1, 1))
             # rvColorsOrder(co[order(o), ])
             # rvColorsOrderSel(max(input$DT_colorsOrder_rows_selected - 1, 1))
         }
@@ -82,11 +91,12 @@ server_create_config = function(dt_table, input, output, session){
             co = rvColorsOrder()
             o = seq_len(nrow(co))
             o[rs] = o[rs] + 1.5
-            DT::replaceData(proxy = proxy_colorsOrder, co[order(o), ])
-            DT::selectRows(proxy = proxy_colorsOrder, 
-                           selected = min(input$DT_colorsOrder_rows_selected + 1, nrow(co)))
-            # rvColorsOrder(co[order(o), ])
-            # rvColorsOrderSel(min(input$DT_colorsOrder_rows_selected + 1, nrow(co)))
+            
+            co = co[order(o), ]
+            rvColorsOrder(co)
+            print(rvColorsOrder())
+            DT::replaceData(proxy = proxy_colorsOrder, data = co, rownames = FALSE)
+            DT::selectRows(proxy = proxy_colorsOrder, selected = min(input$DT_colorsOrder_rows_selected + 1, nrow(co)))
         }
     )
     ###
@@ -94,6 +104,9 @@ server_create_config = function(dt_table, input, output, session){
     ### generate color pickers for every group item
     output$uiCfgColorPickers = renderUI({
         cached_files = rvalsDataFiles$table
+        if(length(rvalsDataFiles$idx_in_cfg) < 1){
+            return(tags$p("waiting for selection"))
+        }
         grps = unique(cached_files[rvalsDataFiles$idx_in_cfg, ][[input$selectColorBy]])
         if(length(grps) < 1){
             return(tags$p("waiting for selection"))

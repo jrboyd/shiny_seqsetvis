@@ -15,6 +15,7 @@ suppressPackageStartupMessages({
     library(shinyFiles)
     library(shinycssloaders)
     library(BiocFileCache)
+    library(DT)
 })
 source("functions_app.R")
 source("class_ssv_config.R")
