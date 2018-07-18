@@ -69,12 +69,10 @@ server_create_config = function(dt_table, input, output, session){
         handlerExpr = {
             rs = input$DT_colorsOrder_rows_selected
             co = rvColorsOrder()
-            showNotification(as.character(nrow(co)))
             o = seq_len(nrow(co))
             o[rs] = o[rs] - 1.5
             co = co[order(o), ]
             rvColorsOrder(co)
-            print(rvColorsOrder())
             DT::replaceData(proxy = proxy_colorsOrder, data = co, rownames = FALSE)
             DT::selectRows(proxy = proxy_colorsOrder, selected = max(input$DT_colorsOrder_rows_selected - 1, 1))
             # rvColorsOrder(co[order(o), ])
@@ -94,7 +92,6 @@ server_create_config = function(dt_table, input, output, session){
             
             co = co[order(o), ]
             rvColorsOrder(co)
-            print(rvColorsOrder())
             DT::replaceData(proxy = proxy_colorsOrder, data = co, rownames = FALSE)
             DT::selectRows(proxy = proxy_colorsOrder, selected = min(input$DT_colorsOrder_rows_selected + 1, nrow(co)))
         }
