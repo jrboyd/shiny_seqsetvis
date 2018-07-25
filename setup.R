@@ -82,7 +82,17 @@ color: red !important;
 background: red !important;
 }
 "
-boxCSS = ""
+boxCSS = "
+.myBtnMoveArrow, .myBtnSwitchFile {
+font-size: 32px;
+}
+.myValidCfg {
+color: green
+}
+.myInvalidCfg {
+color: red
+}
+"
 
 tblCSS = "
 .td:active {

@@ -157,33 +157,6 @@ make_cfg_table = function(){
     cfg_lines
 }
 
-#' Extract encoded bigwigs from config
-#'
-#' @param cfg valid object of class ssv_config
-#' @param name_by refers to rname encode attribute - CELL, MARK, etc
-#' @param qtype file type to extract
-#'
-#' @return named character vector with paths to bigwigs
-#' @export
-#'
-#' @examples
-extract_cfg_files = function(cfg, name_by = c("CELL", "MARK"), qtype = "bigWig"){
-    tab = make_bfc_table(bfc = cfg@bfc)
-    if(!qtype %in% tab$TYPE){
-        stop(qtype, " - not in availble TYPE")
-    }
-    if(!all(name_by %in% colnames(tab))){
-        stop(paste(name_by, collapse = ", "), " - not in availble TYPE")
-    }
-    tab = tab[id %in% cfg@bfc_id & TYPE %in% qtype]
-    paths = as.character(tab$fpath)
-    nam = apply(
-        sapply(name_by, function(x)tab[[x]])
-        , 1, function(y)paste(y, collapse = " "))
-    names(paths) = nam
-    paths
-    
-}
 
 gen_color_picker_ui = function(grps, brew_name, is_free_color){
     possibleColors = unique(safeBrew(50, brew_name))

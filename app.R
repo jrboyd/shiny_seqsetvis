@@ -122,13 +122,23 @@ shinyApp(
         
         bfc_dt_disp = make_bfc_table(bfc_data, displayOnly = TRUE)
         
+        
+        
         ### config create
-        server_create_config(dt_table = bfc_dt_disp,
+        rvFilesTable = reactiveVal(bfc_dt_disp)
+        rvCfgTable = reactiveVal(make_cfg_table())
+        rvValidCfg = reactiveVal(NULL)
+        
+        
+        server_create_config(rv_valid_cfg = rvValidCfg,
+                             rv_files_table = rvFilesTable, 
+                             rv_cfg_table = rvCfgTable,
                              input, output, session)
         
-        rvCfgTable = reactiveVal(make_cfg_table())
         rvLastSel = reactiveVal(NULL)
         
+        observeEvent(rvValidCfg(), 
+                     {req(rvValidCfg()); showNotification("Valid CFG!")})
         
         observeEvent(
             eventExpr = {
@@ -137,7 +147,6 @@ shinyApp(
             handlerExpr = {
                 req(input$DT_configSelect_rows_selected)
                 new_sel = input$DT_configSelect_rows_selected
-                rvLastSel(new_sel)
                 rvLastSel(new_sel)
             })
         
