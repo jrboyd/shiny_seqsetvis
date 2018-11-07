@@ -1,3 +1,5 @@
+library(shiny)
+
 load_libs_withProgress = function(libs, session){
     tmp.sink = suppressPackageStartupMessages({
         # libs = c(
@@ -56,12 +58,12 @@ shiny_ssvPlotBox = function(box_title = "Main Plot", id = "mainPlot", collapsed 
     mybox
 }
 
-htmltools::save_html(fluidRow(
-    # tags$div(
-    shiny_ssvPlotBox("Bars", "intBars", collapsed = FALSE),
-    shiny_ssvPlotBox("Euler", "intEuler")
-    
-), file = "tmp_box_noconv.html")
+# htmltools::save_html(fluidRow(
+#     # tags$div(
+#     shiny_ssvPlotBox("Bars", "intBars", collapsed = FALSE),
+#     shiny_ssvPlotBox("Euler", "intEuler")
+#     
+# ), file = "tmp_box_noconv.html")
 
 make_bfc_table = function(bfc, displayOnly = FALSE){
     rnamel = strsplit(bfcinfo(bfc)$rname, ",")
