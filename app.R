@@ -17,6 +17,7 @@ suppressPackageStartupMessages({
     library(BiocFileCache)
     library(DT)
 })
+print(sessionInfo())
 source("functions_app.R")
 source("class_ssv_config.R")
 source("setup.R")
