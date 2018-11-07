@@ -98,6 +98,8 @@ shinyApp(
             session = session
         )
         
+        print(sessionInfo())
+        
         source("start_cache.R")
         
         
